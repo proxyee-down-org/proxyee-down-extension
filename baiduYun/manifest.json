@@ -1,0 +1,17 @@
+{
+  "title": "百度云盘下载插件",
+  "version": 0.1,
+  "description": "可以直接获取下载链接并推送到Proxyee Down下载",
+  "contentScripts": [
+    {
+      "domains": ["pan.baidu.com", "yun.baidu.com"],
+      "matches": ["^(pan|yun).baidu.com/disk/home.*$"],
+      "scripts": ["util.js", "home.js"]
+    },
+    {
+      "domains": ["pan.baidu.com", "yun.baidu.com"],
+      "matches": ["^(pan|yun).baidu.com/(s/|share/link).*$"],
+      "scripts": ["util.js", "share.js"]
+    }
+  ]
+}
