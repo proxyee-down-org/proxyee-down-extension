@@ -38,7 +38,6 @@ function buildPdownButton() {
     $(document).trigger('bdyInit');
     //直链下载，只支持单文件
     $(document).on('click', 'a[data-menu-id=pd-direct]', function () {
-      //console.log(getDownFiles());
       $(this).parents('span.g-dropdown-button').removeClass('button-open');
       directDown(function (result) {
         console.log(result);
@@ -175,42 +174,6 @@ function buildPdownButton() {
     var type = 'dlink';
     var result = resolveDownInfo(type, downFiles);
     handleDownResult(result, type, downFiles, callback);
-    //TODO 把所有文件的直链解析出来
-    /* var i = 0;
-    for (; i < downFiles.length; i++) {
-      var result = resolveDownInfo('dlink', downFiles);
-      if (result.errno == 0) {
-        callback(result);
-      } else if (result.errno == -20) {
-        var vcode = getVcode();
-        $.showVcodeDialog(
-          vcode.img,
-          function (vcodeInput) {
-            //提交验证码
-            var response = resolveDownInfo(type, downFiles, vcodeInput, vcode.vcode);
-            if (response.errno == 0) {
-              callback(response);
-              i++;
-              for (; i < downFiles.length; i++) {
-                var result = resolveDownInfo('dlink', downFiles, vcodeInput, vcode.vcode);
-                console.log(result);
-              }
-              return 1;
-            } else if (response.errno == -20) {
-              alert('验证码输入错误');
-              return 2;
-            }
-            return -1;
-          },
-          function () {
-            vcode = getVcode();
-            return vcode.img;
-          }
-        );
-        break;
-      }
-    }
-    return downFiles; */
   }
 
   function handleDownResult(result, type, downFiles, callback) {

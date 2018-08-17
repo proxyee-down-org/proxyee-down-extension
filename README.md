@@ -1,5 +1,5 @@
 # Proxyee Down扩展仓库
-每个文件夹代表一个扩展，扩展里必须包含`manifest.json`文件。
+根目录下每个文件夹代表一个扩展，文件夹里必须包含一个`manifest.json`文件。
 
 ## manifest.json
 通过这个文件来配置插件相关信息，例如：
@@ -31,7 +31,7 @@
 ### contentScripts
 配置扩展注入js的条件，可以配置多个。
 - domains
-  表示下载器代理配置的域名通配符,不支持`uri`匹配。
+  表示下载器代理配置的域名通配符。
 - matches
   当浏览器`url`匹配到这里的正则表达式时，就会将js注入至对应的页面。
 - scripts
