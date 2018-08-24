@@ -1,7 +1,7 @@
 {
   "title": "百度云下载插件",
   "version": 0.1,
-  "description": "可以直接获取下载链接并推送到Proxyee Down下载",
+  "description": "可获取真实下载链接并推送到Proxyee Down下载，支持单文件、多文件、文件夹",
   "proxyWildcards": ["pan.baidu.com", "yun.baidu.com"],
   "contentScripts": [
     {
