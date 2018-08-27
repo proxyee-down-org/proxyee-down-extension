@@ -1,6 +1,6 @@
 # 百度云下载插件
 加载成功后在百度云页面可以看到PD下载按钮。  
-![效果](https://github.com/proxyee-down-org/proxyee-down-extension/raw/master/baiduYun/.img/example1.png)
+![效果](https://github.com/proxyee-down-org/proxyee-down-extension/raw/master/baiduYun/.imgs/example1.png)
 
 ## 直链下载
 只能用于单个文件下载。
