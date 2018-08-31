@@ -70,7 +70,7 @@ function buildPdownButton() {
         var request = buildRequest(downFiles);
         try {
           var result = window.pdown.resolve(request);
-          result.request.url = result.request.url.replace(/^https/,'http')
+          result.request.url = result.request.url.replace(/^https/, "http");
           window.pdown.createTask(result.request, result.response);
         } catch (error) {
           if (error.status == 404) {
@@ -106,12 +106,14 @@ function buildPdownButton() {
         window.pdown.resolveAsync(
           request,
           function(result) {
-            downConfig.filePath = downConfig.filePath + "/" + fileInfo.path;
+            var downConfigTemp = Object.assign({}, downConfig, {
+              filePath: downConfig.filePath + "/" + fileInfo.path
+            });
             window.pdown.pushTask(
               {
                 request: result.request,
                 response: result.response,
-                config: downConfig
+                config: downConfigTemp
               },
               function() {
                 $.showInfo(
