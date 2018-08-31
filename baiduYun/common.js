@@ -43,8 +43,21 @@ function buildPdownButton() {
       $(this)
         .parents("span.g-dropdown-button")
         .removeClass("button-open");
-      directDown(function(result) {
-        console.log(result);
+      directDown(function(downFiles) {
+        $.block();
+        var fileInfo = downFiles[0];
+        var request = buildRequest(fileInfo.dlink);
+        if (!isShare()) {
+          request.heads.Cookie = window.pdown.getCookie(fileInfo.dlink);
+        }
+        try {
+          var result = window.pdown.resolve(request);
+          window.pdown.createTask(result.request, result.response);
+        } catch (error) {
+          $.showError("创建任务失败，错误码:" + error.status);
+        } finally {
+          $.unblock();
+        }
       });
     });
     //压缩链接下载，支持单文件和多文件，有最大文件数量下载限制
@@ -52,8 +65,22 @@ function buildPdownButton() {
       $(this)
         .parents("span.g-dropdown-button")
         .removeClass("button-open");
-      batchDown(function(result) {
-        console.log(result);
+      batchDown(function(downFiles) {
+        $.block();
+        var request = buildRequest(downFiles);
+        try {
+          var result = window.pdown.resolve(request);
+          result.request.url = result.request.url.replace(/^https/,'http')
+          window.pdown.createTask(result.request, result.response);
+        } catch (error) {
+          if (error.status == 404) {
+            $.showError("创建任务失败，文件名中不能包含+号");
+          } else {
+            $.showError("创建任务失败，错误码:" + error.status);
+          }
+        } finally {
+          $.unblock();
+        }
       });
     });
     //直接推送下载，把选中的文件全部解析成直链，推送到Proxyee Down下载
@@ -61,9 +88,122 @@ function buildPdownButton() {
       $(this)
         .parents("span.g-dropdown-button")
         .removeClass("button-open");
-      pushDown(function(result) {
-        console.log(result);
+      pushDown(function(downFiles) {
+        var cookie = isShare()
+          ? ""
+          : window.pdown.getCookie(downFiles[0].dlink);
+        var downConfig = window.pdown.getDownConfig();
+        $.showInfo("正在推送中，请勿关闭浏览器");
+        pushTasks(downFiles, 0, cookie, downConfig);
       });
+    });
+
+    function pushTasks(downFiles, index, cookie, downConfig) {
+      if (index < downFiles.length) {
+        var fileInfo = downFiles[index];
+        var request = buildRequest(fileInfo.dlink);
+        request.heads.Cookie = cookie;
+        window.pdown.resolveAsync(
+          request,
+          function(result) {
+            downConfig.filePath = downConfig.filePath + "/" + fileInfo.path;
+            window.pdown.pushTask(
+              {
+                request: result.request,
+                response: result.response,
+                config: downConfig
+              },
+              function() {
+                $.showInfo(
+                  "推送任务成功(" +
+                    (index + 1) +
+                    "/" +
+                    downFiles.length +
+                    ")：" +
+                    fileInfo.server_filename
+                );
+                pushTasks(downFiles, index + 1, cookie, downConfig);
+              },
+              function() {
+                $.showError(
+                  "推送任务失败(" +
+                    (index + 1) +
+                    "/" +
+                    downFiles.length +
+                    ")：" +
+                    fileInfo.server_filename
+                );
+                pushTasks(downFiles, index + 1, cookie, downConfig);
+              }
+            );
+          },
+          function(error) {
+            $.showError(
+              "解析任务失败(" +
+                (index + 1) +
+                "/" +
+                downFiles.length +
+                ")：" +
+                fileInfo.server_filename
+            );
+            pushTasks(downFiles, index + 1, cookie, downConfig);
+          }
+        );
+      }
+    }
+
+    var pdownTipTimer;
+    $.extend({
+      block: function() {
+        var blockDiv = $("#pdownBlockDiv");
+        if (blockDiv.size() == 0) {
+          blockDiv = $(
+            '<div id="pdownBlockDiv" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index: 95;background-color:rgba(255,255,255,.9)">' +
+              '<div style="position: absolute;top:50%;left:50%;color:#2d8cf0">请求中...</div>' +
+              "</div>"
+          );
+          $("body").append(blockDiv);
+        } else {
+          blockDiv.show();
+        }
+      },
+      unblock: function() {
+        $("#pdownBlockDiv").hide();
+      },
+      tip: function(tip, color) {
+        var tipDiv = $("#pdownTipDiv");
+        if (tipDiv.size() == 0) {
+          tipDiv = $(
+            '<div id="pdownTipDiv" style="position:absolute;top:74px;left:50%;z-index: 95;margin-left:-104px;padding:0 15px;background-color:' +
+              color +
+              ';color:#fff;height:40px;box-shadow:0 0 4px rgba(0,0,0,.2);border-radius:4px;">' +
+              '<span style="display:block;margin:0 3px;font-size:13px;line-height:40px;white-space:nowrap;overflow:hidden;text-align:center;text-overflow:ellipsis;max-width:500px;min-width:1px">' +
+              tip +
+              "</span>" +
+              "</div>"
+          );
+          $("body").append(tipDiv);
+        } else {
+          if (!tipDiv.is(":hidden")) {
+            clearTimeout(pdownTipTimer);
+          }
+          tipDiv
+            .css({ "background-color": color })
+            .find("span")
+            .text(tip)
+            .parent()
+            .show();
+        }
+        pdownTipTimer = setTimeout(function() {
+          $("#pdownTipDiv").hide();
+        }, 2000);
+      },
+      showInfo: function(msg) {
+        this.tip(msg, "#3b8cff");
+      },
+      showError: function(msg) {
+        this.tip(msg, "#f8645c");
+      }
     });
   });
   window.onload = function() {
@@ -144,7 +284,7 @@ function buildPdownButton() {
   };
 
   /**
-   * 通过API或取当前页面的信息
+   * 通过API获取当前页面的信息
    */
   function refreshPageInfo() {
     PAGE_INFO.path = getPath();
@@ -164,7 +304,7 @@ function buildPdownButton() {
     $.each(checkedFiles, function(i, checked) {
       $.each(PAGE_INFO.fileList, function(j, file) {
         if (file.server_filename == checked) {
-          checkedFileList.push(fileInfoConv(file));
+          checkedFileList.push(file);
           return false;
         }
       });
@@ -176,14 +316,14 @@ function buildPdownButton() {
   function directDown(callback) {
     var downFiles = getDownFiles();
     if (downFiles.length == 0) {
-      alert("请选择要下载的文件");
+      $.showError("请选择要下载的文件");
       return;
     }
     if (
       downFiles.length > 1 ||
       (downFiles.length == 1 && downFiles[0].isdir == 1)
     ) {
-      alert("直链下载只支持单个文件");
+      $.showError("直链下载只支持单个文件");
       return;
     }
     var type = "dlink";
@@ -194,7 +334,7 @@ function buildPdownButton() {
   function batchDown(callback) {
     var downFiles = getDownFiles();
     if (downFiles.length == 0) {
-      alert("请选择要下载的文件");
+      $.showError("请选择要下载的文件");
       return;
     }
     var type = "batch";
@@ -205,7 +345,7 @@ function buildPdownButton() {
   function pushDown(callback) {
     var downFiles = resolveAllChecked();
     if (downFiles.length == 0) {
-      alert("请选择要下载的文件");
+      $.showError("请选择要下载的文件");
       return;
     }
     var type = "dlink";
@@ -215,8 +355,7 @@ function buildPdownButton() {
 
   function handleDownResult(result, type, downFiles, callback) {
     if (result.errno == 0) {
-      callback(result);
-      return;
+      callback(buildFileInfoByFsId(result.dlink || result.list, downFiles));
     } else if (result.errno == -20) {
       var vcode = getVcode();
       $.showVcodeDialog(
@@ -230,10 +369,12 @@ function buildPdownButton() {
             vcode.vcode
           );
           if (response.errno == 0) {
-            callback(response);
+            callback(
+              buildFileInfoByFsId(response.dlink || response.list, downFiles)
+            );
             return 1;
           } else if (response.errno == -20) {
-            alert("验证码输入错误");
+            $.showError("验证码输入错误");
             return 2;
           }
           return -1;
@@ -243,6 +384,10 @@ function buildPdownButton() {
           return vcode.img;
         }
       );
+    } else if (result.errno == 112) {
+      $.showError("页面过期，请刷新重试");
+    } else {
+      $.showError("获取下载链接失败，错误码：" + result.errno);
     }
   }
 
@@ -278,21 +423,15 @@ function buildPdownButton() {
       });
     } else {
       var params = {
-        type: type,
-        sign: yunData.SIGN,
-        timestamp: yunData.timestamp,
-        bdstoken: yunData.MYBDSTOKEN,
-        channel: "chunlei",
-        clienttype: 0,
-        web: 1,
-        app_id: 250528,
-        logid: getLogID(),
         encrypt: 0,
         product: "share",
         uk: yunData.SHARE_UK,
         primaryid: yunData.SHARE_ID,
         fid_list: getFidList(downFiles)
       };
+      if (type == "batch") {
+        params.type = type;
+      }
       if (yunData.SHARE_PUBLIC != 1) {
         var seKey = decodeURIComponent(getCookie("BDCLND"));
         params.extra = "{" + '"sekey":"' + seKey + '"' + "}";
@@ -303,9 +442,17 @@ function buildPdownButton() {
         params.vcode_str = vcodeStr;
       }
       $.ajax({
-        url: "/api/sharedownload",
+        url:
+          "/api/sharedownload?channel=chunlei&clienttype=0&web=1&app_id=250528&sign=" +
+          yunData.SIGN +
+          "&timestamp=" +
+          yunData.timestamp +
+          "&bdstoken=" +
+          yunData.MYBDSTOKEN +
+          "&logid=" +
+          getLogID(),
         async: false,
-        method: "GET",
+        method: "POST",
         data: params,
         success: function(response) {
           result = response;
@@ -409,7 +556,7 @@ function buildPdownButton() {
           resolvePathDeep(fileInfo.path, fileList);
         } else {
           //文件的话加入文件列表
-          fileList.push(fileInfoConv(fileInfo));
+          fileList.push(fileInfo);
         }
       }
     }
@@ -449,19 +596,44 @@ function buildPdownButton() {
     return window.location.href.indexOf("/disk/home") == -1;
   }
 
+  /**
+   * 匹配下载文件对应的信息
+   */
+  function buildFileInfoByFsId(linkList, downFiles) {
+    if (linkList && linkList.length > 0) {
+      if (downFiles.length == 1) {
+        Object.assign(
+          Array.isArray(linkList) ? linkList[0] : linkList,
+          downFiles[0]
+        );
+      } else {
+        for (var i = 0; i < linkList.length; i++) {
+          var index = downFiles.findIndex(function(downFile) {
+            return linkList[i].fs_id == downFile.fs_id;
+          });
+          if (index != -1) {
+            Object.assign(linkList[i], downFiles[index]);
+          }
+        }
+      }
+    }
+    return linkList;
+  }
+
+  function buildRequest(url) {
+    return url
+      ? {
+          url: url,
+          heads: {},
+          body: ""
+        }
+      : null;
+  }
+
   function getDefaultStyle(obj, attribute) {
     return obj.currentStyle
       ? obj.currentStyle[attribute]
       : document.defaultView.getComputedStyle(obj, false)[attribute];
-  }
-
-  function fileInfoConv(file) {
-    return {
-      filename: file.server_filename,
-      path: file.path,
-      fs_id: file.fs_id,
-      isdir: file.isdir
-    };
   }
 
   function getCookie(e) {

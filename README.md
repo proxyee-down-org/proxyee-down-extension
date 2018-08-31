@@ -15,11 +15,11 @@
   "contentScripts": [
     {
       "matches": ["^(pan|yun).baidu.com/disk/home.*$"],
-      "scripts": ["util.js", "home.js"]
+      "scripts": ["common.js", "home.js"]
     },
     {
       "matches": ["^(pan|yun).baidu.com/(s/|share/link).*$"],
-      "scripts": ["util.js", "share.js"]
+      "scripts": ["common.js", "share.js"]
     }
   ]
 }
@@ -48,6 +48,7 @@
 - matches
 
   当浏览器`url`匹配到这里的正则表达式时，就会将 js 注入至对应的页面。
+
 - scripts
 
   当`matches`生效时，注入扩展目录下指定的 js 文件。
@@ -56,6 +57,18 @@
 
 1. 首先 fork 此仓库
 2. 创建一个插件目录
-3. 编写`manifest.json`和脚本
+3. 编写`manifest.json`和`脚本`
 4. 编写`README.md`文件
 5. 提交 PR
+
+## API
+
+插件脚本中可以访问`window.pdown`对象，目前支持以下方法：
+方法名 | 参数 | 异步 | 说明
+------------ | ------------- | ------------ | ------------
+resolve | (request) | 否 | 根据请求解析出响应的相关信息(大小、文件名、是否支持断点下载)
+resolveAsync | (request, onSuccess, onError) | 是 | 根据请求解析出响应的相关信息(大小、文件名、是否支持断点下载)
+createTask | (request, response) | 否 | 创建一个任务，会唤醒 proxyee-down 并弹出下载框
+pushTask | (taskFom, onSuccess, onError) | 是 | 创建一个任务，不弹下载框直接在后台下载
+getDownConfig | () | 否 | 取下载相关配置信息
+getDownConfig | (url) | 否 | 取目标网站的cookie，需要被代理服务器访问才能生效
