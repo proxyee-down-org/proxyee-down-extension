@@ -65,7 +65,7 @@
 
 插件脚本中可以访问`window.pdown`对象，目前支持以下方法：
 方法名 | 参数 | 异步 | 说明
------------- | ------------- | ------------ | ------------
+---|---|---|---
 resolve | (request) | 否 | 根据请求解析出响应的相关信息(大小、文件名、是否支持断点下载)
 resolveAsync | (request, onSuccess, onError) | 是 | 根据请求解析出响应的相关信息(大小、文件名、是否支持断点下载)
 createTask | (request, response) | 否 | 创建一个任务，会唤醒 proxyee-down 并弹出下载框
