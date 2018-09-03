@@ -70,7 +70,7 @@ function buildPdownButton() {
         var request = buildRequest(downFiles);
         try {
           var result = window.pdown.resolve(request);
-          result.request.url = result.request.url.replace(/^https/,'http')
+          result.request.url = result.request.url.replace(/^https/, "http");
           window.pdown.createTask(result.request, result.response);
         } catch (error) {
           if (error.status == 404) {
@@ -106,12 +106,14 @@ function buildPdownButton() {
         window.pdown.resolveAsync(
           request,
           function(result) {
-            downConfig.filePath = downConfig.filePath + "/" + fileInfo.path;
+            var downConfigTemp = Object.assign({}, downConfig, {
+              filePath: downConfig.filePath + "/" + fileInfo.path
+            });
             window.pdown.pushTask(
               {
                 request: result.request,
                 response: result.response,
-                config: downConfig
+                config: downConfigTemp
               },
               function() {
                 $.showInfo(
@@ -301,15 +303,15 @@ function buildPdownButton() {
     if (checkedFiles.length == 0) {
       return checkedFileList;
     }
+    var fileList = getSearchKey() ? getSearchFileList() : PAGE_INFO.fileList;
     $.each(checkedFiles, function(i, checked) {
-      $.each(PAGE_INFO.fileList, function(j, file) {
+      $.each(fileList, function(j, file) {
         if (file.server_filename == checked) {
           checkedFileList.push(file);
           return false;
         }
       });
     });
-    //}
     return checkedFileList;
   }
 
@@ -510,7 +512,7 @@ function buildPdownButton() {
         }
       });
     } else {
-      if (path == "/" && yunData.FILEINFO.length == 1) {
+      if (path == "/") {
         fileList = yunData.FILEINFO;
       } else {
         var shareType = yunData.SHARE_PUBLIC === 1 ? "public" : "secret";
@@ -560,6 +562,35 @@ function buildPdownButton() {
         }
       }
     }
+  }
+
+  function getSearchFileList() {
+    var filelist = [];
+    var params = {
+      recursion: 1,
+      order: "time",
+      desc: 1,
+      showempty: 0,
+      web: 1,
+      page: 1,
+      num: 100,
+      key: getSearchKey(),
+      channel: "chunlei",
+      app_id: 250528,
+      bdstoken: yunData.MYBDSTOKEN,
+      logid: getLogID(),
+      clienttype: 0
+    };
+    $.ajax({
+      url: "/api/search",
+      async: false,
+      method: "GET",
+      data: params,
+      success: function(response) {
+        filelist = 0 === response.errno ? response.list : [];
+      }
+    });
+    return filelist;
   }
 
   /**
@@ -728,6 +759,13 @@ function buildPdownButton() {
     var regx = /(^|&|\/|\?)vmode=([^&]*)(&|$)/i;
     var result = hash.match(regx);
     return result && result.length > 2 ? result[2] : "list";
+  }
+
+  function getSearchKey() {
+    var hash = location.hash;
+    var regx = /(^|&|\/|\?)key=([^&]*)(&|$)/i;
+    var result = hash.match(regx);
+    return result && result.length > 2 ? decodeURIComponent(result[2]) : null;
   }
 
   function getFidList(list) {
