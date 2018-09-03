@@ -602,7 +602,7 @@ function buildPdownButton() {
   function buildFileInfoByFsId(linkList, downFiles) {
     if (linkList && linkList.length > 0) {
       if (downFiles.length == 1) {
-        Object.assign(
+        $.extend(
           Array.isArray(linkList) ? linkList[0] : linkList,
           downFiles[0]
         );
@@ -612,7 +612,7 @@ function buildPdownButton() {
             return linkList[i].fs_id == downFile.fs_id;
           });
           if (index != -1) {
-            Object.assign(linkList[i], downFiles[index]);
+            $.extend(linkList[i], downFiles[index]);
           }
         }
       }
