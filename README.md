@@ -11,7 +11,8 @@
   "title": "百度云下载插件",
   "version": 0.1,
   "description": "可以直接获取下载链接并推送到Proxyee Down下载",
-  "proxyWildcards": ["pan.baidu.com", "yun.baidu.com"],
+  "proxyWildcards": ["pan.baidu.com", "yun.baidu.com", "d.pcs.baidu.com"],
+  "sniffRegexs": [],
   "contentScripts": [
     {
       "matches": ["^(pan|yun).baidu.com/disk/home.*$"],
@@ -39,7 +40,11 @@
 
 ### proxyWildcards
 
-域名通配符，代理服务器会在指定的域名通配符中生效
+域名通配符列表，代理服务器会在指定的域名通配符中生效
+
+### sniffRegexs
+
+正则表达式列表，会嗅探匹配的正则表达式列表的url请求，当请求为下载请求时会调用Proxyee Down进行下载
 
 ### contentScripts
 

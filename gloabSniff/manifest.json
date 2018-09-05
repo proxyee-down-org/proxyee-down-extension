@@ -1,0 +1,7 @@
+{
+  "title": "全网嗅探",
+  "version": 0.1,
+  "description": "用于嗅探全网的下载请求",
+  "proxyWildcards": ["*.*"],
+  "sniffRegexs": ["^.*$"]
+}
