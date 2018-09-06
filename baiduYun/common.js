@@ -48,11 +48,11 @@ function buildPdownButton() {
         var fileInfo = downFiles[0];
         var request = buildRequest(fileInfo.dlink);
         if (!isShare()) {
-          request.heads.Cookie = window.pdown.getCookie(fileInfo.dlink);
+          request.heads.Cookie = pdown.getCookie(fileInfo.dlink);
         }
         try {
-          var result = window.pdown.resolve(request);
-          window.pdown.createTask(result.request, result.response);
+          var result = pdown.resolve(request);
+          pdown.createTask(result.request, result.response);
         } catch (error) {
           $.showError("创建任务失败，错误码:" + error.status);
         } finally {
@@ -69,9 +69,9 @@ function buildPdownButton() {
         $.block();
         var request = buildRequest(downFiles);
         try {
-          var result = window.pdown.resolve(request);
+          var result = pdown.resolve(request);
           result.request.url = result.request.url.replace(/^https/, "http");
-          window.pdown.createTask(result.request, result.response);
+          pdown.createTask(result.request, result.response);
         } catch (error) {
           if (error.status == 404) {
             $.showError("创建任务失败，文件名中不能包含+号");
@@ -91,8 +91,8 @@ function buildPdownButton() {
       pushDown(function(downFiles) {
         var cookie = isShare()
           ? ""
-          : window.pdown.getCookie(downFiles[0].dlink);
-        var downConfig = window.pdown.getDownConfig();
+          : pdown.getCookie(downFiles[0].dlink);
+        var downConfig = pdown.getDownConfig();
         $.showInfo("正在推送中，请勿关闭浏览器");
         pushTasks(downFiles, 0, cookie, downConfig);
       });
@@ -103,13 +103,13 @@ function buildPdownButton() {
         var fileInfo = downFiles[index];
         var request = buildRequest(fileInfo.dlink);
         request.heads.Cookie = cookie;
-        window.pdown.resolveAsync(
+        pdown.resolveAsync(
           request,
           function(result) {
             var downConfigTemp = Object.assign({}, downConfig, {
               filePath: downConfig.filePath + "/" + fileInfo.path
             });
-            window.pdown.pushTask(
+            pdown.pushTask(
               {
                 request: result.request,
                 response: result.response,
