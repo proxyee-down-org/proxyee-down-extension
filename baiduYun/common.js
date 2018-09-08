@@ -388,6 +388,8 @@ function buildPdownButton() {
       );
     } else if (result.errno == 112) {
       $.showError("页面过期，请刷新重试");
+    } else if (result.errno == 121) {
+      $.showError("获取压缩链接失败，文件数量过多");
     } else {
       $.showError("获取下载链接失败，错误码：" + result.errno);
     }
