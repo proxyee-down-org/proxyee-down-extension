@@ -1,7 +1,7 @@
 {
   "title": "全网嗅探",
-  "version": 0.1,
-  "description": "用于嗅探全网的下载请求",
+  "version": 0.2,
+  "description": "用于嗅探全网的下载请求，（注：在不清楚该插件功能的情况下请勿随意安装,安装此插件后所有的请求都会通过代理服务器）",
   "proxyWildcards": ["*.*"],
   "sniffRegexs": ["^.*$"]
 }
