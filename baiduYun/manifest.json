@@ -1,6 +1,6 @@
 {
   "title": "百度云下载",
-  "version": 0.17,
+  "version": 0.19,
   "description": "可获取真实下载链接并推送到Proxyee Down下载，支持单文件、多文件、文件夹",
   "proxyWildcards": ["pan.baidu.com", "yun.baidu.com", "d.pcs.baidu.com"],
   "contentScripts": [

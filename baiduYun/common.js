@@ -89,9 +89,7 @@ function buildPdownButton() {
         .parents("span.g-dropdown-button")
         .removeClass("button-open");
       pushDown(function(downFiles) {
-        var cookie = isShare()
-          ? ""
-          : pdown.getCookie(downFiles[0].dlink);
+        var cookie = isShare() ? "" : pdown.getCookie(downFiles[0].dlink);
         var downConfig = pdown.getDownConfig();
         $.showInfo("正在推送中，请勿关闭浏览器");
         pushTasks(downFiles, 0, cookie, downConfig);
@@ -378,6 +376,10 @@ function buildPdownButton() {
           } else if (response.errno == -20) {
             $.showError("验证码输入错误");
             return 2;
+          } else if (result.errno == 121) {
+            $.showError("获取压缩链接失败，文件数量过多");
+          } else {
+            $.showError("获取下载链接失败，错误码：" + result.errno);
           }
           return -1;
         },
@@ -388,6 +390,8 @@ function buildPdownButton() {
       );
     } else if (result.errno == 112) {
       $.showError("页面过期，请刷新重试");
+    } else if (result.errno == 121) {
+      $.showError("获取压缩链接失败，文件数量过多");
     } else {
       $.showError("获取下载链接失败，错误码：" + result.errno);
     }
