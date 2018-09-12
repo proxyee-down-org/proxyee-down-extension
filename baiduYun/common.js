@@ -18,9 +18,11 @@ function buildPdownButton() {
       "        </span>" +
       "      </a>" +
       '      <span class="menu" style="width: 96px;z-index: 49;">' +
-      '        <a data-menu-id="pd-direct" class="g-button-menu " href="javascript:;">直链下载</a>' +
-      '        <a data-menu-id="pd-batch" class="g-button-menu " href="javascript:;">压缩链接下载</a>' +
-      '        <a data-menu-id="pd-push" class="g-button-menu " href="javascript:;">批量推送下载</a>' +
+      '        <a data-menu-id="pd-direct" class="g-button-menu" href="javascript:;">直链下载</a>' +
+      '        <a data-menu-id="pd-batch" class="g-button-menu" href="javascript:;">压缩链接下载</a>' +
+      '        <a data-menu-id="pd-push" class="g-button-menu" href="javascript:;">批量推送下载</a>' +
+      '        <div style="height:1px;width:100%;background:#e9e9e9;overflow:hidden;"></div>' +
+      '        <a data-menu-id="pd-batch" class="g-button-menu" target="_blank" href="https://github.com/proxyee-down-org/proxyee-down-extension/tree/master/baiduYun">使用教程</a>' +
       "      </span>" +
       "    </span>"
   );
@@ -67,16 +69,24 @@ function buildPdownButton() {
         .removeClass("button-open");
       batchDown(function(downFiles) {
         $.block();
+        $.showInfo("若下载的压缩包无法解压，请参考使用教程里的解压方法");
         var request = buildRequest(downFiles);
         try {
           var result = pdown.resolve(request);
           result.request.url = result.request.url.replace(/^https/, "http");
           pdown.createTask(result.request, result.response);
         } catch (error) {
-          if (error.status == 404) {
-            $.showError("创建任务失败，文件名中不能包含+号");
+          if (error.status == 400) {
+            var response = JSON.parse(error.responseText);
+            if (response.code == 4002) {
+              $.showError(
+                "创建任务失败：文件总大小过大或文件夹名称中不能包含+号"
+              );
+            } else {
+              $.showError("创建任务失败，错误码:" + response.code);
+            }
           } else {
-            $.showError("创建任务失败，错误码:" + error.status);
+            $.showError("创建任务异常");
           }
         } finally {
           $.unblock();
@@ -91,7 +101,7 @@ function buildPdownButton() {
       pushDown(function(downFiles) {
         var cookie = isShare() ? "" : pdown.getCookie(downFiles[0].dlink);
         var downConfig = pdown.getDownConfig();
-        $.showInfo("正在推送中，请勿关闭浏览器");
+        $.showInfo("正在推送中，请勿关闭浏览器", -1);
         pushTasks(downFiles, 0, cookie, downConfig);
       });
     });
@@ -101,11 +111,15 @@ function buildPdownButton() {
         var fileInfo = downFiles[index];
         var request = buildRequest(fileInfo.dlink);
         request.heads.Cookie = cookie;
+        var bdyfilePath = fileInfo.path.substring(
+          0,
+          fileInfo.path.lastIndexOf("/")
+        );
         pdown.resolveAsync(
           request,
           function(result) {
             var downConfigTemp = Object.assign({}, downConfig, {
-              filePath: downConfig.filePath + "/" + fileInfo.path
+              filePath: downConfig.filePath + bdyfilePath
             });
             pdown.pushTask(
               {
@@ -120,18 +134,28 @@ function buildPdownButton() {
                     "/" +
                     downFiles.length +
                     ")：" +
-                    fileInfo.server_filename
+                    fileInfo.server_filename,
+                  index + 1 == downFiles.length ? null : -1
                 );
                 pushTasks(downFiles, index + 1, cookie, downConfig);
               },
-              function() {
+              function(err) {
+                var errTip = "";
+                if (err.status == 400) {
+                  var response = JSON.parse(err.responseText);
+                  errTip = "，错误码" + response.code;
+                }
                 $.showError(
-                  "推送任务失败(" +
+                  "推送任务失败" +
+                    "(" +
                     (index + 1) +
                     "/" +
                     downFiles.length +
-                    ")：" +
-                    fileInfo.server_filename
+                    ")" +
+                    errTip +
+                    "：" +
+                    fileInfo.server_filename,
+                  index + 1 == downFiles.length ? null : -1
                 );
                 pushTasks(downFiles, index + 1, cookie, downConfig);
               }
@@ -143,10 +167,11 @@ function buildPdownButton() {
                 (index + 1) +
                 "/" +
                 downFiles.length +
-                ")：" +
-                fileInfo.server_filename
+                ")，重试中：" +
+                fileInfo.server_filename,
+              -1
             );
-            pushTasks(downFiles, index + 1, cookie, downConfig);
+            pushTasks(downFiles, index, cookie, downConfig);
           }
         );
       }
@@ -170,7 +195,7 @@ function buildPdownButton() {
       unblock: function() {
         $("#pdownBlockDiv").hide();
       },
-      tip: function(tip, color) {
+      tip: function(tip, color, time) {
         var tipDiv = $("#pdownTipDiv");
         if (tipDiv.size() == 0) {
           tipDiv = $(
@@ -194,15 +219,18 @@ function buildPdownButton() {
             .parent()
             .show();
         }
-        pdownTipTimer = setTimeout(function() {
-          $("#pdownTipDiv").hide();
-        }, 2000);
+        time = time || 3500;
+        if (time > 0) {
+          pdownTipTimer = setTimeout(function() {
+            $("#pdownTipDiv").hide();
+          }, time);
+        }
       },
-      showInfo: function(msg) {
-        this.tip(msg, "#3b8cff");
+      showInfo: function(msg, time) {
+        this.tip(msg, "#3b8cff", time);
       },
-      showError: function(msg) {
-        this.tip(msg, "#f8645c");
+      showError: function(msg, time) {
+        this.tip(msg, "#f8645c", time);
       }
     });
   });
@@ -301,7 +329,15 @@ function buildPdownButton() {
     if (checkedFiles.length == 0) {
       return checkedFileList;
     }
-    var fileList = getSearchKey() ? getSearchFileList() : PAGE_INFO.fileList;
+    var fileList = [];
+    if (getSearchKey()) {
+      fileList = getSearchFileList();
+    } else {
+      if (!PAGE_INFO.fileList) {
+        refreshPageInfo();
+      }
+      fileList = PAGE_INFO.fileList;
+    }
     $.each(checkedFiles, function(i, checked) {
       $.each(fileList, function(j, file) {
         if (file.server_filename == checked) {
