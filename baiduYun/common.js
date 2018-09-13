@@ -457,7 +457,7 @@ function buildPdownButton() {
       $.ajax({
         url: "/api/download",
         async: false,
-        method: "GET",
+        method: "POST",
         data: params,
         success: function(response) {
           result = response;
