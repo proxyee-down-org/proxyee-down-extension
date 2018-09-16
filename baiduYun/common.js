@@ -1,5 +1,5 @@
 function onBdyInit(callback) {
-  var interval = setInterval(function() {
+  var interval = setInterval(function () {
     if (window.$ && $(".g-button").size() > 0) {
       clearInterval(interval);
       callback();
@@ -10,42 +10,42 @@ function onBdyInit(callback) {
 function buildPdownButton() {
   var pdownBtn = $(
     '<span class="g-dropdown-button last-button" style="display: inline-block;">' +
-      '      <a class="g-button" href="javascript:;" title="PD下载" style="color:#fff;background: #f8645c;">' +
-      '        <span class="g-button-right">' +
-      '          <em class="icon icon-download" title="PD下载">' +
-      "          </em>" +
-      '          <span class="text" style="width: auto;">PD下载</span>' +
-      "        </span>" +
-      "      </a>" +
-      '      <span class="menu" style="width: 96px;z-index: 49;">' +
-      '        <a data-menu-id="pd-direct" class="g-button-menu" href="javascript:;">直链下载</a>' +
-      '        <a data-menu-id="pd-batch" class="g-button-menu" href="javascript:;">压缩链接下载</a>' +
-      '        <a data-menu-id="pd-push" class="g-button-menu" href="javascript:;">批量推送下载</a>' +
-      '        <div style="height:1px;width:100%;background:#e9e9e9;overflow:hidden;"></div>' +
-      '        <a data-menu-id="pd-batch" class="g-button-menu" target="_blank" href="https://github.com/proxyee-down-org/proxyee-down-extension/tree/master/baiduYun">使用教程</a>' +
-      "      </span>" +
-      "    </span>"
+    '      <a class="g-button" href="javascript:;" title="PD下载" style="color:#fff;background: #f8645c;">' +
+    '        <span class="g-button-right">' +
+    '          <em class="icon icon-download" title="PD下载">' +
+    "          </em>" +
+    '          <span class="text" style="width: auto;">PD下载</span>' +
+    "        </span>" +
+    "      </a>" +
+    '      <span class="menu" style="width: 96px;z-index: 49;">' +
+    '        <a data-menu-id="pd-direct" class="g-button-menu" href="javascript:;">直链下载</a>' +
+    '        <a data-menu-id="pd-batch" class="g-button-menu" href="javascript:;">压缩链接下载</a>' +
+    '        <a data-menu-id="pd-push" class="g-button-menu" href="javascript:;">批量推送下载</a>' +
+    '        <div style="height:1px;width:100%;background:#e9e9e9;overflow:hidden;"></div>' +
+    '        <a data-menu-id="pd-batch" class="g-button-menu" target="_blank" href="https://github.com/proxyee-down-org/proxyee-down-extension/tree/master/baiduYun">使用教程</a>' +
+    "      </span>" +
+    "    </span>"
   );
   pdownBtn.hover(
-    function() {
+    function () {
       $(this).addClass("button-open");
     },
-    function() {
+    function () {
       $(this).removeClass("button-open");
     }
   );
   return pdownBtn;
 }
 
-(function() {
-  onBdyInit(function() {
+(function () {
+  onBdyInit(function () {
     $(document).trigger("bdyInit");
     //直链下载，只支持单文件
-    $(document).on("click", "a[data-menu-id=pd-direct]", function() {
+    $(document).on("click", "a[data-menu-id=pd-direct]", function () {
       $(this)
         .parents("span.g-dropdown-button")
         .removeClass("button-open");
-      directDown(function(downFiles) {
+      directDown(function (downFiles) {
         $.block();
         var fileInfo = downFiles[0];
         var request = buildRequest(fileInfo.dlink);
@@ -63,11 +63,11 @@ function buildPdownButton() {
       });
     });
     //压缩链接下载，支持单文件和多文件，有最大文件数量下载限制
-    $(document).on("click", "a[data-menu-id=pd-batch]", function() {
+    $(document).on("click", "a[data-menu-id=pd-batch]", function () {
       $(this)
         .parents("span.g-dropdown-button")
         .removeClass("button-open");
-      batchDown(function(downFiles) {
+      batchDown(function (downFiles) {
         $.block();
         $.showInfo("若下载的压缩包无法解压，请参考使用教程里的解压方法");
         var request = buildRequest(downFiles);
@@ -94,11 +94,11 @@ function buildPdownButton() {
       });
     });
     //直接推送下载，把选中的文件全部解析成直链，推送到Proxyee Down下载
-    $(document).on("click", "a[data-menu-id=pd-push]", function() {
+    $(document).on("click", "a[data-menu-id=pd-push]", function () {
       $(this)
         .parents("span.g-dropdown-button")
         .removeClass("button-open");
-      pushDown(function(downFiles) {
+      pushDown(function (downFiles) {
         var cookie = isShare() ? "" : pdown.getCookie(downFiles[0].dlink);
         var downConfig = pdown.getDownConfig();
         $.showInfo("正在推送中，请勿关闭浏览器", -1);
@@ -117,29 +117,28 @@ function buildPdownButton() {
         );
         pdown.resolveAsync(
           request,
-          function(result) {
+          function (result) {
             var downConfigTemp = Object.assign({}, downConfig, {
               filePath: downConfig.filePath + bdyfilePath
             });
-            pdown.pushTask(
-              {
+            pdown.pushTask({
                 request: result.request,
                 response: result.response,
                 config: downConfigTemp
               },
-              function() {
+              function () {
                 $.showInfo(
                   "推送任务成功(" +
-                    (index + 1) +
-                    "/" +
-                    downFiles.length +
-                    ")：" +
-                    fileInfo.server_filename,
+                  (index + 1) +
+                  "/" +
+                  downFiles.length +
+                  ")：" +
+                  fileInfo.server_filename,
                   index + 1 == downFiles.length ? null : -1
                 );
                 pushTasks(downFiles, index + 1, cookie, downConfig);
               },
-              function(err) {
+              function (err) {
                 var errTip = "";
                 if (err.status == 400) {
                   var response = JSON.parse(err.responseText);
@@ -147,28 +146,28 @@ function buildPdownButton() {
                 }
                 $.showError(
                   "推送任务失败" +
-                    "(" +
-                    (index + 1) +
-                    "/" +
-                    downFiles.length +
-                    ")" +
-                    errTip +
-                    "：" +
-                    fileInfo.server_filename,
+                  "(" +
+                  (index + 1) +
+                  "/" +
+                  downFiles.length +
+                  ")" +
+                  errTip +
+                  "：" +
+                  fileInfo.server_filename,
                   index + 1 == downFiles.length ? null : -1
                 );
                 pushTasks(downFiles, index + 1, cookie, downConfig);
               }
             );
           },
-          function(error) {
+          function (error) {
             $.showError(
               "解析任务失败(" +
-                (index + 1) +
-                "/" +
-                downFiles.length +
-                ")，重试中：" +
-                fileInfo.server_filename,
+              (index + 1) +
+              "/" +
+              downFiles.length +
+              ")，重试中：" +
+              fileInfo.server_filename,
               -1
             );
             pushTasks(downFiles, index, cookie, downConfig);
@@ -179,33 +178,33 @@ function buildPdownButton() {
 
     var pdownTipTimer;
     $.extend({
-      block: function() {
+      block: function () {
         var blockDiv = $("#pdownBlockDiv");
         if (blockDiv.size() == 0) {
           blockDiv = $(
             '<div id="pdownBlockDiv" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index: 95;background-color:rgba(255,255,255,.9)">' +
-              '<div style="position: absolute;top:50%;left:50%;color:#2d8cf0">请求中...</div>' +
-              "</div>"
+            '<div style="position: absolute;top:50%;left:50%;color:#2d8cf0">请求中...</div>' +
+            "</div>"
           );
           $("body").append(blockDiv);
         } else {
           blockDiv.show();
         }
       },
-      unblock: function() {
+      unblock: function () {
         $("#pdownBlockDiv").hide();
       },
-      tip: function(tip, color, time) {
+      tip: function (tip, color, time) {
         var tipDiv = $("#pdownTipDiv");
         if (tipDiv.size() == 0) {
           tipDiv = $(
             '<div id="pdownTipDiv" style="position:absolute;top:74px;left:50%;z-index: 95;margin-left:-104px;padding:0 15px;background-color:' +
-              color +
-              ';color:#fff;height:40px;box-shadow:0 0 4px rgba(0,0,0,.2);border-radius:4px;">' +
-              '<span style="display:block;margin:0 3px;font-size:13px;line-height:40px;white-space:nowrap;overflow:hidden;text-align:center;text-overflow:ellipsis;max-width:500px;min-width:1px">' +
-              tip +
-              "</span>" +
-              "</div>"
+            color +
+            ';color:#fff;height:40px;box-shadow:0 0 4px rgba(0,0,0,.2);border-radius:4px;">' +
+            '<span style="display:block;margin:0 3px;font-size:13px;line-height:40px;white-space:nowrap;overflow:hidden;text-align:center;text-overflow:ellipsis;max-width:500px;min-width:1px">' +
+            tip +
+            "</span>" +
+            "</div>"
           );
           $("body").append(tipDiv);
         } else {
@@ -213,7 +212,9 @@ function buildPdownButton() {
             clearTimeout(pdownTipTimer);
           }
           tipDiv
-            .css({ "background-color": color })
+            .css({
+              "background-color": color
+            })
             .find("span")
             .text(tip)
             .parent()
@@ -221,23 +222,23 @@ function buildPdownButton() {
         }
         time = time || 3500;
         if (time > 0) {
-          pdownTipTimer = setTimeout(function() {
+          pdownTipTimer = setTimeout(function () {
             $("#pdownTipDiv").hide();
           }, time);
         }
       },
-      showInfo: function(msg, time) {
+      showInfo: function (msg, time) {
         this.tip(msg, "#3b8cff", time);
       },
-      showError: function(msg, time) {
+      showError: function (msg, time) {
         this.tip(msg, "#f8645c", time);
       }
     });
   });
-  window.onload = function() {
+  window.onload = function () {
     refreshPageInfo();
   };
-  window.addEventListener("hashchange", function() {
+  window.addEventListener("hashchange", function () {
     refreshPageInfo();
   });
 
@@ -251,12 +252,12 @@ function buildPdownButton() {
       if (PAGE_INFO.vmode == "list") {
         $("span.EOGexf")
           .parent()
-          .each(function() {
+          .each(function () {
             if (
               getDefaultStyle(
                 $(this)
-                  .find(">span>span")
-                  .get(0),
+                .find(">span>span")
+                .get(0),
                 "display"
               ) != "none"
             ) {
@@ -267,12 +268,12 @@ function buildPdownButton() {
             }
           });
       } else if (PAGE_INFO.vmode == "grid") {
-        $("div.cEefyz").each(function() {
+        $("div.cEefyz").each(function () {
           if (
             getDefaultStyle(
               $(this)
-                .find(">span")
-                .get(0),
+              .find(">span")
+              .get(0),
               "display"
             ) != "none"
           ) {
@@ -287,17 +288,17 @@ function buildPdownButton() {
       //分享页面
       if (
         PAGE_INFO.path == "/" &&
-        yunData.FILEINFO.length == 1 &&
-        yunData.FILEINFO[0].isdir == 0
+        (yunData.FILEINFO.length == 0 ||
+          (yunData.FILEINFO.length == 1 && yunData.FILEINFO[0].isdir == 0))
       ) {
-        checkedFiles = [yunData.FILEINFO[0].server_filename];
+        checkedFiles = yunData.FILEINFO.length == 0 ? [yunData.FILENAME] : [yunData.FILEINFO[0].server_filename];
       } else {
         var listType = PAGE_INFO.vmode == "list" ? "dd" : "div";
-        $(listType + ".JS-item-active").each(function() {
+        $(listType + ".JS-item-active").each(function () {
           checkedFiles.push(
             $(this)
-              .find("a.filename")
-              .text()
+            .find("a.filename")
+            .text()
           );
         });
       }
@@ -338,8 +339,8 @@ function buildPdownButton() {
       }
       fileList = PAGE_INFO.fileList;
     }
-    $.each(checkedFiles, function(i, checked) {
-      $.each(fileList, function(j, file) {
+    $.each(checkedFiles, function (i, checked) {
+      $.each(fileList, function (j, file) {
         if (file.server_filename == checked) {
           checkedFileList.push(file);
           return false;
@@ -396,7 +397,7 @@ function buildPdownButton() {
       var vcode = getVcode();
       $.showVcodeDialog(
         vcode.img,
-        function(vcodeInput) {
+        function (vcodeInput) {
           //提交验证码
           var response = resolveDownInfo(
             type,
@@ -419,7 +420,7 @@ function buildPdownButton() {
           }
           return -1;
         },
-        function() {
+        function () {
           vcode = getVcode();
           return vcode.img;
         }
@@ -459,7 +460,7 @@ function buildPdownButton() {
         async: false,
         method: "POST",
         data: params,
-        success: function(response) {
+        success: function (response) {
           result = response;
         }
       });
@@ -484,8 +485,7 @@ function buildPdownButton() {
         params.vcode_str = vcodeStr;
       }
       $.ajax({
-        url:
-          "/api/sharedownload?channel=chunlei&clienttype=0&web=1&app_id=250528&sign=" +
+        url: "/api/sharedownload?channel=chunlei&clienttype=0&web=1&app_id=250528&sign=" +
           yunData.SIGN +
           "&timestamp=" +
           yunData.timestamp +
@@ -496,7 +496,7 @@ function buildPdownButton() {
         async: false,
         method: "POST",
         data: params,
-        success: function(response) {
+        success: function (response) {
           result = response;
         }
       });
@@ -547,7 +547,7 @@ function buildPdownButton() {
         async: false,
         method: "GET",
         data: params,
-        success: function(response) {
+        success: function (response) {
           fileList = 0 === response.errno ? response.list : [];
         }
       });
@@ -576,7 +576,7 @@ function buildPdownButton() {
           method: "GET",
           async: false,
           data: params,
-          success: function(response) {
+          success: function (response) {
             fileList = 0 === response.errno ? response.list : [];
           }
         });
@@ -626,7 +626,7 @@ function buildPdownButton() {
       async: false,
       method: "GET",
       data: params,
-      success: function(response) {
+      success: function (response) {
         filelist = 0 === response.errno ? response.list : [];
       }
     });
@@ -653,7 +653,7 @@ function buildPdownButton() {
       method: "GET",
       async: false,
       data: params,
-      success: function(response) {
+      success: function (response) {
         result = response;
       }
     });
@@ -679,7 +679,7 @@ function buildPdownButton() {
         );
       } else {
         for (var i = 0; i < linkList.length; i++) {
-          var index = downFiles.findIndex(function(downFile) {
+          var index = downFiles.findIndex(function (downFile) {
             return linkList[i].fs_id == downFile.fs_id;
           });
           if (index != -1) {
@@ -692,31 +692,30 @@ function buildPdownButton() {
   }
 
   function buildRequest(url) {
-    return url
-      ? {
-          url: url,
-          heads: {},
-          body: ""
-        }
-      : null;
+    return url ? {
+        url: url,
+        heads: {},
+        body: ""
+      } :
+      null;
   }
 
   function getDefaultStyle(obj, attribute) {
-    return obj.currentStyle
-      ? obj.currentStyle[attribute]
-      : document.defaultView.getComputedStyle(obj, false)[attribute];
+    return obj.currentStyle ?
+      obj.currentStyle[attribute] :
+      document.defaultView.getComputedStyle(obj, false)[attribute];
   }
 
   function getCookie(e) {
     var o, t;
     var n = document,
       c = decodeURI;
-    return n.cookie.length > 0 && ((o = n.cookie.indexOf(e + "=")), -1 != o)
-      ? ((o = o + e.length + 1),
+    return n.cookie.length > 0 && ((o = n.cookie.indexOf(e + "=")), -1 != o) ?
+      ((o = o + e.length + 1),
         (t = n.cookie.indexOf(";", o)),
         -1 == t && (t = n.cookie.length),
-        c(n.cookie.substring(o, t)))
-      : "";
+        c(n.cookie.substring(o, t))) :
+      "";
   }
 
   function getLogID() {
@@ -729,13 +728,13 @@ function buildPdownButton() {
     function l(e) {
       if (e.length < 2) {
         var n = e.charCodeAt(0);
-        return 128 > n
-          ? e
-          : 2048 > n
-            ? f(192 | (n >>> 6)) + f(128 | (63 & n))
-            : f(224 | ((n >>> 12) & 15)) +
-              f(128 | ((n >>> 6) & 63)) +
-              f(128 | (63 & n));
+        return 128 > n ?
+          e :
+          2048 > n ?
+          f(192 | (n >>> 6)) + f(128 | (63 & n)) :
+          f(224 | ((n >>> 12) & 15)) +
+          f(128 | ((n >>> 6) & 63)) +
+          f(128 | (63 & n));
       }
       var n =
         65536 + 1024 * (e.charCodeAt(0) - 55296) + (e.charCodeAt(1) - 56320);
@@ -775,13 +774,13 @@ function buildPdownButton() {
     }
 
     function w(e, n) {
-      return n
-        ? p(String(e))
-            .replace(/[+\/]/g, function(e) {
-              return "+" == e ? "-" : "_";
-            })
-            .replace(/=/g, "")
-        : p(String(e));
+      return n ?
+        p(String(e))
+        .replace(/[+\/]/g, function (e) {
+          return "+" == e ? "-" : "_";
+        })
+        .replace(/=/g, "") :
+        p(String(e));
     }
 
     return w(getCookie(name));
@@ -814,7 +813,7 @@ function buildPdownButton() {
       return null;
     }
     var fileidlist = [];
-    $.each(list, function(index, element) {
+    $.each(list, function (index, element) {
       fileidlist.push(element.fs_id);
     });
     fidlist = "[" + fileidlist + "]";
@@ -834,7 +833,7 @@ function buildPdownButton() {
       i,
       s,
       o = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    for (e = t.length, r = 0, a = ""; e > r; ) {
+    for (e = t.length, r = 0, a = ""; e > r;) {
       if (((n = 255 & t.charCodeAt(r++)), r == e)) {
         a += o.charAt(n >> 2);
         a += o.charAt((3 & n) << 4);
