@@ -553,7 +553,15 @@ function buildPdownButton() {
       });
     } else {
       if (path == "/") {
-        fileList = yunData.FILEINFO;
+        if (yunData.FILEINFO.length != 0) {
+          fileList = yunData.FILEINFO;
+        } else {
+          fileList = [{
+            fs_id: yunData.FS_ID,
+            isdir: 0,
+            server_filename: yunData.FILENAME
+          }]
+        }
       } else {
         var shareType = yunData.SHARE_PUBLIC === 1 ? "public" : "secret";
         var params = {
