@@ -80,7 +80,7 @@ function buildPdownButton() {
             var response = JSON.parse(error.responseText);
             if (response.code == 4002) {
               $.showError(
-                "创建任务失败：文件总大小过大或文件夹名称中不能包含+号"
+                "创建任务失败：文件总大小超过300M限制或文件夹名称中包含+号，请使用批量推送下载"
               );
             } else {
               $.showError("创建任务失败，错误码:" + response.code);
@@ -157,7 +157,8 @@ function buildPdownButton() {
                   index + 1 == downFiles.length ? null : -1
                 );
                 pushTasks(downFiles, index + 1, cookie, downConfig);
-              }
+              },
+              true
             );
           },
           function (error) {
