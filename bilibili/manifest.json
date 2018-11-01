@@ -1,6 +1,6 @@
 {
   "title": "B站视频下载",
-  "version": 0.11,
+  "version": 0.12,
   "description": "B站视频下载扩展，可直接解析视频链接",
   "proxyWildcards": ["www.bilibili.com"],
   "homepage": "https://github.com/monkeyWie/bilibili-helper",
