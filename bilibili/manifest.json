@@ -1,12 +1,12 @@
 {
   "title": "B站视频下载",
-  "version": 0.12,
+  "version": 0.13,
   "description": "B站视频下载扩展，可直接解析视频链接",
   "proxyWildcards": ["www.bilibili.com"],
   "homepage": "https://github.com/monkeyWie/bilibili-helper",
   "contentScripts": [
     {
-      "matches": ["^www.bilibili.com/video/av.*$"],
+      "matches": ["^www.bilibili.com.*$"],
       "scripts": ["dist/web.js"]
     }
   ],
@@ -15,7 +15,7 @@
     "events": [
       {
         "on": "resolve",
-        "matches": ["^www.bilibili.com/video/av.*$"],
+        "matches": ["^www.bilibili.com/video/av.*$", "^www.bilibili.com/bangumi/play/ss.*$"],
         "method": "onResolve"
       }
     ]
