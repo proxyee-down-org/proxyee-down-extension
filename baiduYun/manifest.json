@@ -1,6 +1,6 @@
 {
   "title": "百度云下载",
-  "version": 0.32,
+  "version": 0.33,
   "require": {
     "min": 3.2
   },
@@ -17,6 +17,16 @@
       "scripts": ["dist/web.js"]
     }
   ],
+  "hookScript": {
+    "script": "dist/hook.js",
+    "events": [
+      {
+        "on": "start",
+        "matches": ["^.*pcs\\.baidu\\.com.*$"],
+        "method": "onStart"
+      }
+    ]
+  },
   "settings": [
     {
       "name": "bduss",
