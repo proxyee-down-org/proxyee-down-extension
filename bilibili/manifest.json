@@ -1,7 +1,7 @@
 {
   "title": "B站视频下载",
-  "version": 0.13,
-  "description": "B站视频下载扩展，可直接解析视频链接",
+  "version": 0.14,
+  "description": "B站视频下载扩展，可直接解析视频链接，可下载视频的清晰度和当前登录的帐号、视频本身可下载清晰度有关",
   "proxyWildcards": ["www.bilibili.com"],
   "homepage": "https://github.com/monkeyWie/bilibili-helper",
   "contentScripts": [
@@ -28,10 +28,11 @@
       "description": "解析链接时默认的清晰度",
       "value": 80,
       "options": {
-        "流畅(360P)": 15,
+        "流畅(360P)": 16,
         "清晰(480P)": 32,
         "高清(720P)": 64,
-        "高清(1080P)": 80
+        "超清(1080P)": 80,
+        "超清+(1080P+)": 112
       }
     }
   ]
