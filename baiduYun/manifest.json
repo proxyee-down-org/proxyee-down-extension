@@ -1,6 +1,6 @@
 {
   "title": "百度云下载",
-  "version": 0.36,
+  "version": 0.37,
   "require": {
     "min": 3.2
   },
@@ -15,6 +15,21 @@
     {
       "matches": ["^(pan|yun).baidu.com/(s/|share/link).*$"],
       "scripts": ["dist/web.js"]
+    }
+  ],
+  "settings": [
+    {
+      "name": "randomUa",
+      "title": "随机UA",
+      "type": "Boolean",
+      "value": true,
+      "description": "随机生成一个UA去下载，可以避免被限速。"
+    },
+    {
+      "name": "speUa",
+      "title": "固定UA",
+      "type": "String",
+      "description": "当存在固定UA时，则优先使用固定UA去下载。"
     }
   ]
 }
